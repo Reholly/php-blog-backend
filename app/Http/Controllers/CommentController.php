@@ -2,28 +2,37 @@
 
 namespace app\Http\Controllers;
 
-use app\Models\Comment;
+use App\Services\CommentService;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    protected $commentService;
+
+    public function __construct(CommentService $commentService)
+    {
+        $this->commentService = $commentService;
+    }
+
     public function store(Request $request)
     {
-        $comment = Comment::create($request->all());
-        return response()->json($comment, 201);
+        $data = $request->validate([
+            'article_id' => 'required|exists:articles,id',
+            'author' => 'required|string',
+            'text' => 'required|string',
+        ]);
+
+        return $this->commentService->createComment($data);
+    }
+
+    public function delete($id)
+    {
+        $user = auth()->user(); // Получаем текущего авторизованного пользователя
+        return $this->commentService->deleteComment($id, $user);
     }
 
     public function index($articleId)
     {
-        $comments = Comment::where('article_id', $articleId)->get();
-        return response()->json($comments);
-    }
-
-    public function destroy($id)
-    {
-        // Проверка роли
-        $comment = Comment::findOrFail($id);
-        $comment->delete();
-        return response()->json(null, 204);
+        return $this->commentService->getCommentsByArticle($articleId);
     }
 }
