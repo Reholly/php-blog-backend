@@ -1,10 +1,12 @@
 # php-blog-backend
 
-1. Создание миграции
+1. Создание миграции (поднять перед этим в композе, дать права на изменение файла)
 ```bash
-   php artisan make:model NAME -m
+   docker compose exec app php artisan make:migration create_articles_table --create=articles_init
+
 ```
 2. Применение
 ```bash
-php artisan migrate
+docker compose exec app php artisan make:migration create_articles_table --create=articles_init
+
 ```

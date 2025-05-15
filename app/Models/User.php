@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\database\factories\UserFactory> */
+    /** @use HasFactory<\nginx\database\factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
