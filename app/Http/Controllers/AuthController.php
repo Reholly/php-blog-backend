@@ -7,6 +7,7 @@ use App\Models\UserRole;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,7 @@ class AuthController extends Controller
         error_log(print_r($request->all(), true));
 
         try {
-            $requestContent = $request->validate([
+            $data = $request->validate([
                 'login' => 'required|unique:users',
                 'password' => [
                     'required',
@@ -29,10 +30,10 @@ class AuthController extends Controller
             ]);
 
             User::create([
-                'login' => $requestContent['login'],
-                'password' => password_hash($requestContent['password'], PASSWORD_BCRYPT),
-                'name' => $requestContent['name'],
-                'surname' => $requestContent['surname'],
+                'login' => $data['login'],
+                'password' => password_hash($data['password'], PASSWORD_BCRYPT),
+                'name' => $data['name'],
+                'surname' => $data['surname'],
                 'role' => UserRole::USER
             ]);
 
@@ -41,5 +42,25 @@ class AuthController extends Controller
             error_log($exception);
             return response()->json($exception, 500);
         }
+    }
+
+    public function signIn(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'login' => 'required|exists:users',
+            'password' => [
+                'required',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*\d).+$/'
+            ],
+        ], [
+            'password.regex' => 'Пароль должен содержать хотя бы одну заглавную букву и одну цифру.'
+        ]);
+
+        if (!$token = JWTAuth::attempt($data)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        return response()->json(['token' => $token]);
     }
 }
