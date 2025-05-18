@@ -20,6 +20,15 @@ class UsersController extends Controller
             return response()->json(['message' => 'Такой роли не существует'], Response::HTTP_BAD_REQUEST);
         }
 
+        if ($data['role'] === UserRole::ADMIN) {
+            return response()->json(['message' => 'Нельзя выдать роль администратора'],
+                Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($data['to'] === auth()->user()->id) {
+            return response()->json(['message' => 'Нельзя выдать роль самому себе'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $userToGrant = User::findOrFail($data['to']);
         $userToGrant->update(['role' => $data['role']]);
 
