@@ -22,3 +22,6 @@ Route::post('/auth/sign-in', [AuthController::class, 'signIn']);
 // Users
 Route::post('/users/grant-role', [UsersController::class, 'grantRole'])
     ->middleware(['auth:api', 'requireRole:' . UserRole::ADMIN]);
+
+Route::delete('/users/{id}', [UsersController::class, 'deleteUser'])
+    ->middleware(['auth:api', 'requireRole:' . UserRole::ADMIN]);

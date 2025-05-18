@@ -34,6 +34,16 @@ class UsersController extends Controller
 
         return response()->json();
     }
-    // TODO remove role
-    // TODO delete user
+
+    public function deleteUser($id): JsonResponse
+    {
+        if ($id === auth()->user()->id) {
+            return response()->json(['message' => 'Нельзя забанить самого себя'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
 }
