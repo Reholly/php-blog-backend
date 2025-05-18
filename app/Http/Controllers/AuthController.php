@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use app\Models\User;
+use App\Models\User;
 use App\Models\UserRole;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -16,21 +16,23 @@ class AuthController extends Controller
 
         try {
             $requestContent = $request->validate([
-                'email' => 'required|unique:users',
+                'login' => 'required|unique:users',
                 'password' => [
                     'required',
                     'min:8',
                     'regex:/^(?=.*[A-Z])(?=.*\d).+$/'
                 ],
-                'name' => 'required'
+                'name' => 'required',
+                'surname' => 'required',
             ], [
                 'password.regex' => 'Пароль должен содержать хотя бы одну заглавную букву и одну цифру.'
             ]);
 
             User::create([
-                'email' => $requestContent['email'],
+                'login' => $requestContent['login'],
                 'password' => password_hash($requestContent['password'], PASSWORD_BCRYPT),
                 'name' => $requestContent['name'],
+                'surname' => $requestContent['surname'],
                 'role' => UserRole::USER
             ]);
 
