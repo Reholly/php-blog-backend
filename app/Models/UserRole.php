@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class UserRole
+enum UserRole: string
 {
     const ADMIN = 'admin';
     const MODERATOR = 'moderator';
