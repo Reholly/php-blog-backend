@@ -24,6 +24,12 @@ services:
       - ./:/var/www
     networks:
       - laravel-network
+    environment:
+        DB_HOST: db
+        DB_PORT: 5432
+        DB_DATABASE: blog
+        DB_USERNAME: admin
+        DB_PASSWORD: admin
 
   db:
     image: postgres:latest
