@@ -44,12 +44,8 @@ class AuthController extends Controller
             'login' => 'required|exists:users',
             'password' => [
                 'required',
-                'min:8',
-                'regex:/^(?=.*[A-Z])(?=.*\d).+$/'
             ],
-        ], [
-            'password.regex' => 'Пароль должен содержать хотя бы одну заглавную букву и одну цифру.'
-        ]);
+        ], []);
 
         $tokenResult = $this->signInManager->signIn($data);
 
