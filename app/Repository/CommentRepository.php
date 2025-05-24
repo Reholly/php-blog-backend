@@ -2,7 +2,7 @@
 
 namespace app\Repository;
 
-use app\Models\Comment;
+use App\Models\Comment;
 
 class CommentRepository
 {

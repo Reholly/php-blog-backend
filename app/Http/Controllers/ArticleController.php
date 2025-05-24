@@ -1,29 +1,47 @@
 <?php
 
-namespace app\Http\Controllers;
+namespace App\Http\Controllers;
 
-use app\Models\Article;
+use App\Models\Article;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
     public function index(Request $request)
     {
-        $articles = Article::paginate(25);
+        $query = Article::query()->with('tags');
+
+        if ($request->has('tag')) {
+            $tags = explode(',', $request->tag);
+            $query->whereHas('tags', function ($q) use ($tags) {
+                foreach ($tags as $tag) {
+                    $q->where('title', 'LIKE', "%{$tag}%");
+                }
+            });
+        }
+
+        $articles = $query->paginate(25);
         return response()->json($articles);
     }
 
     public function show($id)
     {
-        $article = Article::findOrFail($id);
+        $article = Article::with('tags')->findOrFail($id);
         return response()->json($article);
     }
 
     public function store(Request $request)
     {
-        // Проверка на наличие ролей (заглушка)
-        // $this->authorize('create', Article::class);
-        $article = Article::create($request->all());
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = $request->all();
+        $data['author'] = $user->login;
+
+        $article = Article::create($data);
+
         return response()->json($article, 201);
     }
 
