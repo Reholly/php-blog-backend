@@ -6,6 +6,7 @@ use App\Services\SignInManager;
 use App\Services\UserManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -44,13 +45,17 @@ class AuthController extends Controller
             'login' => 'required|exists:users',
             'password' => [
                 'required',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*\d).+$/'
             ],
-        ], []);
+        ], [
+            'password.regex' => 'Пароль должен содержать хотя бы одну заглавную букву и одну цифру.'
+        ]);
 
         $tokenResult = $this->signInManager->signIn($data);
 
         return $tokenResult->isSuccess
             ? response()->json(['token' => $tokenResult->token])
-            : response()->json(['message' => $tokenResult->error]);
+            : response()->json(['message' => $tokenResult->error], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }
