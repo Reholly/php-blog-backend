@@ -8,5 +8,9 @@
 2. Применение
 ```bash
 docker compose exec php-fpm php artisan migrate
+```
 
+3. Применение сидера
+```bash
+docker compose exec php-fpm php artisan db:seed
 ```
