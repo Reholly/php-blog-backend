@@ -9,7 +9,7 @@ class ArticleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Article::query()->with('tags');
+        $query = Article::query()->with('tags', 'comments.user', 'category');
 
         if ($request->has('tag')) {
             $tags = explode(',', $request->tag);
@@ -20,13 +20,19 @@ class ArticleController extends Controller
             });
         }
 
+        if ($request->has('category')) {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%'.$request->category.'%');
+            });
+        }
+
         $articles = $query->paginate(25);
         return response()->json($articles);
     }
 
     public function show($id)
     {
-        $article = Article::with('tags')->findOrFail($id);
+        $article = Article::with('tags', 'comments.user', 'category')->findOrFail($id);
         return response()->json($article);
     }
 
@@ -37,10 +43,19 @@ class ArticleController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $data = $request->all();
-        $data['author'] = $user->login;
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
 
-        $article = Article::create($data);
+        $article = Article::create([
+            'title' => $validatedData['title'],
+            'content' => $validatedData['content'],
+            'author' => $user->login,
+            'category_id' => $validatedData['category_id'] ?? null,
+        ]);
+
 
         return response()->json($article, 201);
     }

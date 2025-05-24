@@ -11,22 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->timestamp('surname');
-            $table->string('login')->unique();
-            $table->string('password');
+            $table->string('title')->unique();
+            $table->text('desc')->nullable();
             $table->timestamps();
         });
-
-   }
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('tags');
     }
 };

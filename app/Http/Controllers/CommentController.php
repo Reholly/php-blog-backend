@@ -1,38 +1,30 @@
 <?php
 
-namespace app\Http\Controllers;
+namespace App\Http\Controllers;
 
-use App\Services\CommentService;
+use App\Models\Article;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
-    protected $commentService;
-
-    public function __construct(CommentService $commentService)
+// Добавление комментария
+    public function store(Request $request, Article $article)
     {
-        $this->commentService = $commentService;
-    }
+        $validated = $request->validate(['content' => 'required|string']);
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'article_id' => 'required|exists:articles,id',
-            'author' => 'required|string',
-            'text' => 'required|string',
+        $comment = $article->comments()->create([
+            'content' => $validated['content'],
+            'user_id' => auth()->id()
         ]);
 
-        return $this->commentService->createComment($data);
+        return response()->json($comment, 201);
     }
 
-    public function delete($id)
+    // Удаление комментария
+    public function destroy(Comment $comment)
     {
-        $user = auth()->user(); // Получаем текущего авторизованного пользователя
-        return $this->commentService->deleteComment($id, $user);
-    }
-
-    public function index($articleId)
-    {
-        return $this->commentService->getCommentsByArticle($articleId);
+        $comment->delete();
+        return response()->json(null, 204);
     }
 }
