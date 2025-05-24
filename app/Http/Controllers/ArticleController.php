@@ -9,7 +9,7 @@ class ArticleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Article::query()->with('tags');
+        $query = Article::query()->with('tags', 'comments.user');
 
         if ($request->has('tag')) {
             $tags = explode(',', $request->tag);
