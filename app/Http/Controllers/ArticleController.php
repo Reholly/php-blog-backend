@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\UserRole;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ArticleController extends Controller
 {
@@ -12,6 +15,7 @@ class ArticleController extends Controller
         $currentUserId = auth()->user()->id;
 
         $query = Article::query()
+            ->where('is_approved', true)
             ->with('tags', 'comments.user', 'category')
             ->withCount('likes');
 
@@ -71,23 +75,36 @@ class ArticleController extends Controller
             'category_id' => $validatedData['category_id'] ?? null,
         ]);
 
-
         return response()->json($article, 201);
     }
 
     public function update(Request $request, $id)
     {
-        // Проверка роли
         $article = Article::findOrFail($id);
+        if ($article->author != auth()->user()->login) {
+            return response()->json(['error' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+
         $article->update($request->all());
         return response()->json($article, 200);
     }
 
     public function destroy($id)
     {
-        // Проверка роли
         $article = Article::findOrFail($id);
+        $currentUser = auth()->user();
+        if ($currentUser->role == UserRole::USER && $article->author !== auth()->user()->login) {
+            return response()->json(['error' => 'Forbidden'], Response::HTTP_FORBIDDEN);
+        }
+
         $article->delete();
         return response()->json(null, 204);
+    }
+
+    public function approve(Article $article): JsonResponse
+    {
+        $article->update(['is_approved' => true]);
+
+        return response()->json([], Response::HTTP_OK);
     }
 }

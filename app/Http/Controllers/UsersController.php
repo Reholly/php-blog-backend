@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Results\GiveRoleResultError;
+use App\Models\User;
 use App\Services\UserManager;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,5 +51,14 @@ class UsersController extends Controller
         $this->userManager->deleteUserById($id);
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    public function index(): JsonResponse
+    {
+        $currentUserID = auth()->user()->id;
+
+        $users = User::query()->whereNot('id', $currentUserID)->get();
+
+        return response()->json($users, Response::HTTP_OK);
     }
 }

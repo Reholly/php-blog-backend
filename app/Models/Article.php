@@ -10,7 +10,7 @@ class Article extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'content', 'author', 'category_id'];
+    protected $fillable = ['title', 'content', 'author', 'category_id', 'is_approved'];
 
     public function tags()
     {
