@@ -9,7 +9,11 @@ class ArticleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Article::query()->with('tags', 'comments.user', 'category');
+        $currentUserId = auth()->user()->id;
+
+        $query = Article::query()
+            ->with('tags', 'comments.user', 'category')
+            ->withCount('likes');
 
         if ($request->has('tag')) {
             $tags = explode(',', $request->tag);
@@ -27,6 +31,17 @@ class ArticleController extends Controller
         }
 
         $articles = $query->paginate(25);
+
+        $articles->getCollection()->transform(function ($article) use ($currentUserId) {
+            if ($currentUserId) {
+                $article->liked_by_current_user = $article->likes()->where('user_id', $currentUserId)->exists();
+            } else {
+                $article->liked_by_current_user = false;
+            }
+
+            return $article;
+        });
+
         return response()->json($articles);
     }
 

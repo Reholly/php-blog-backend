@@ -8,6 +8,7 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\UsersController;
 use App\Models\UserRole;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LikesController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -44,3 +45,8 @@ Route::apiResource('categories', CategoryController::class)
 
 Route::get('/categories', [CategoryController::class, 'index']); // Публичный доступ
 
+// Likes
+Route::post('/articles/{article}/likes', [LikesController::class, 'setLike'])
+    ->middleware(['auth:api']);
+Route::delete('/articles/{article}/likes', [LikesController::class, 'deleteLike'])
+    ->middleware(['auth:api']);
