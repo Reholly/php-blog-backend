@@ -24,6 +24,8 @@ Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])
     ->middleware(['auth:api']);
 Route::patch('/articles/{article}/approve', [ArticleController::class, 'approve'])
     ->middleware(['auth:api', 'requireRole:' . UserRole::MODERATOR]);
+Route::get('/articles/not-approved', [ArticleController::class, 'indexNoApproved'])
+    ->middleware(['auth:api', 'requireRole:' . UserRole::ADMIN]);
 
 // Comments
 Route::post('/articles/{article}/comments', [CommentController::class, 'store'])
@@ -67,3 +69,4 @@ Route::apiResource('categories', CategoryController::class)
 
 Route::get('/categories', [CategoryController::class, 'index']) // Публичный доступ
     ->middleware(['auth:api']);
+

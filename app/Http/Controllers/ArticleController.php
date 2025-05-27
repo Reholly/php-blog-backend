@@ -107,4 +107,44 @@ class ArticleController extends Controller
 
         return response()->json([], Response::HTTP_OK);
     }
+
+    public function indexNoApproved(Request $request)
+    {
+        $currentUserId = auth()->user()->id;
+
+        $query = Article::query()
+            ->where('is_approved', false)
+            ->with('tags', 'comments.user', 'category')
+            ->withCount('likes');
+
+        if ($request->has('tag')) {
+            $tags = explode(',', $request->tag);
+            $query->whereHas('tags', function ($q) use ($tags) {
+                foreach ($tags as $tag) {
+                    $q->where('title', 'LIKE', "%{$tag}%");
+                }
+            });
+        }
+
+        if ($request->has('category')) {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%'.$request->category.'%');
+            });
+        }
+
+        $articles = $query->get();
+
+        $articles->transform(function ($article) use ($currentUserId) {
+            if ($currentUserId) {
+                $article->liked_by_current_user = $article->likes()->where('user_id', $currentUserId)->exists();
+            } else {
+                $article->liked_by_current_user = false;
+            }
+
+            return $article;
+        });
+
+        return response()->json($articles);
+    }
+
 }
