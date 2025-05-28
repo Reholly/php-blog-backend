@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UsersController;
 use App\Models\UserRole;
@@ -44,3 +46,14 @@ Route::apiResource('categories', CategoryController::class)
 
 Route::get('/categories', [CategoryController::class, 'index']); // Публичный доступ
 
+Route::middleware('auth:api')->group(function () {
+    // Bookmarks
+    Route::get('/bookmarks', [BookmarkController::class, 'index']);
+    Route::post('/articles/{article}/bookmark', [BookmarkController::class, 'store']);
+    Route::delete('/articles/{article}/bookmark', [BookmarkController::class, 'destroy']);
+
+    // Follows
+    Route::post('/authors/{author}/follow', [FollowController::class, 'follow']);
+    Route::delete('/authors/{author}/follow', [FollowController::class, 'unfollow']);
+    Route::get('/feed', [FollowController::class, 'feed']);
+});
