@@ -25,4 +25,9 @@ class UserRepository
     {
         $user->delete();
     }
+
+    public function findByLogin(string $login): User
+    {
+        return User::query()->where('login', $login)->first();
+    }
 }

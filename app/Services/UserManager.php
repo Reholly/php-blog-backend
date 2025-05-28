@@ -55,4 +55,10 @@ class UserManager
         $user = $this->userRepository->findById($id);
         $this->userRepository->delete($user);
     }
+
+    public function findUserByLogin(string $login): User
+    {
+        return $this->userRepository->findByLogin($login);
+    }
+
 }

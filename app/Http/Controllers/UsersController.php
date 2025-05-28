@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Results\GiveRoleResultError;
+use App\Models\User;
 use App\Services\UserManager;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,14 +21,14 @@ class UsersController extends Controller
     {
         $data = request()->validate([
             'role' => 'required|string',
-            'to' => 'required|integer'
+            'to' => 'required|string'
         ]);
 
-        if ($data['to'] === auth()->user()->id) {
+        if ($data['to'] === auth()->user()->login) {
             return response()->json(['message' => 'Нельзя выдать роль самому себе'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $userToGrant = $this->userManager->findUserByID($data['to']);
+        $userToGrant = $this->userManager->findUserByLogin($data['to']);
         $result = $this->userManager->giveRoleToUser($userToGrant, $data['role']);
         if (!$result->isSuccess) {
             switch ($result->error) {
@@ -41,6 +42,7 @@ class UsersController extends Controller
         return response()->json(null, Response::HTTP_OK);
     }
 
+
     public function deleteUser($id): JsonResponse
     {
         if ($id == auth()->user()->id) {
@@ -50,5 +52,14 @@ class UsersController extends Controller
         $this->userManager->deleteUserById($id);
 
         return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    public function index(): JsonResponse
+    {
+        $currentUserID = auth()->user()->id;
+
+        $users = User::query()->whereNot('id', $currentUserID)->get();
+
+        return response()->json($users, Response::HTTP_OK);
     }
 }
