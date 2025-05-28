@@ -21,14 +21,14 @@ class UsersController extends Controller
     {
         $data = request()->validate([
             'role' => 'required|string',
-            'to' => 'required|integer'
+            'to' => 'required|string'
         ]);
 
-        if ($data['to'] === auth()->user()->id) {
+        if ($data['to'] === auth()->user()->login) {
             return response()->json(['message' => 'Нельзя выдать роль самому себе'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $userToGrant = $this->userManager->findUserByID($data['to']);
+        $userToGrant = $this->userManager->findUserByLogin($data['to']);
         $result = $this->userManager->giveRoleToUser($userToGrant, $data['role']);
         if (!$result->isSuccess) {
             switch ($result->error) {
@@ -41,6 +41,7 @@ class UsersController extends Controller
 
         return response()->json(null, Response::HTTP_OK);
     }
+
 
     public function deleteUser($id): JsonResponse
     {

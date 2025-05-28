@@ -15,6 +15,8 @@ Route::get('/', function () {
 });
 // Articles
 Route::get('/articles', [ArticleController::class, 'index']);
+Route::get('/articles/not-approved', [ArticleController::class, 'indexNoApproved'])
+    ->middleware(['auth:api', 'requireRole:' . UserRole::ADMIN]);
 Route::get('/articles/{id}', [ArticleController::class, 'show']);
 Route::post('/articles', [ArticleController::class, 'store'])
     ->middleware(['auth:api']);
@@ -23,9 +25,9 @@ Route::put('/articles/{id}', [ArticleController::class, 'update'])
 Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])
     ->middleware(['auth:api']);
 Route::patch('/articles/{article}/approve', [ArticleController::class, 'approve'])
-    ->middleware(['auth:api', 'requireRole:' . UserRole::MODERATOR]);
-Route::get('/articles/not-approved', [ArticleController::class, 'indexNoApproved'])
-    ->middleware(['auth:api', 'requireRole:' . UserRole::ADMIN]);
+    ->middleware(['auth:api', 'requireRole:' . UserRole::MODERATOR . ',' . UserRole::ADMIN]);
+
+
 
 // Comments
 Route::post('/articles/{article}/comments', [CommentController::class, 'store'])

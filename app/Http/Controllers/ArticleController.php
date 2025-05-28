@@ -10,44 +10,44 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ArticleController extends Controller
 {
-    public function index(Request $request)
-    {
-        $currentUserId = auth()->user()->id;
+   public function index(Request $request)
+   {
+       $currentUser = auth()->user();
 
-        $query = Article::query()
-            ->where('is_approved', true)
-            ->with('tags', 'comments.user', 'category')
-            ->withCount('likes');
+       $query = Article::query()
+           ->where('is_approved', true)
+           ->with('tags', 'comments.user', 'category')
+           ->withCount('likes');
 
-        if ($request->has('tag')) {
-            $tags = explode(',', $request->tag);
-            $query->whereHas('tags', function ($q) use ($tags) {
-                foreach ($tags as $tag) {
-                    $q->where('title', 'LIKE', "%{$tag}%");
-                }
-            });
-        }
+       if ($request->has('tag')) {
+           $tags = explode(',', $request->tag);
+           $query->whereHas('tags', function ($q) use ($tags) {
+               foreach ($tags as $tag) {
+                   $q->where('title', 'LIKE', "%{$tag}%");
+               }
+           });
+       }
 
-        if ($request->has('category')) {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%'.$request->category.'%');
-            });
-        }
+       if ($request->has('category')) {
+           $query->whereHas('category', function ($q) use ($request) {
+               $q->where('name', 'LIKE', '%'.$request->category.'%');
+           });
+       }
 
-        $articles = $query->paginate(25);
+       $articles = $query->paginate(25);
 
-        $articles->getCollection()->transform(function ($article) use ($currentUserId) {
-            if ($currentUserId) {
-                $article->liked_by_current_user = $article->likes()->where('user_id', $currentUserId)->exists();
-            } else {
-                $article->liked_by_current_user = false;
-            }
+       $articles->getCollection()->transform(function ($article) use ($currentUser) {
+           if ($currentUser) {
+               $article->liked_by_current_user = $article->likes()->where('user_id', $currentUser->id)->exists();
+           } else {
+               $article->liked_by_current_user = false;
+           }
 
-            return $article;
-        });
+           return $article;
+       });
 
-        return response()->json($articles);
-    }
+       return response()->json($articles);
+   }
 
     public function show($id)
     {
@@ -97,9 +97,15 @@ class ArticleController extends Controller
             return response()->json(['error' => 'Forbidden'], Response::HTTP_FORBIDDEN);
         }
 
+        $article->comments()->delete();
+        $article->likes()->delete();
+        $article->tags()->delete();
+        $article->category()->delete();
         $article->delete();
+
         return response()->json(null, 204);
     }
+
 
     public function approve(Article $article): JsonResponse
     {
